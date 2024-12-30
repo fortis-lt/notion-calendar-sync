@@ -1,0 +1,16 @@
+global:
+  logLevel: debug
+infrastructure:
+  notion:
+    integrationKey: TBD
+    database:
+      id: e853a9b1eb8441cba2815f90949ec0ff
+      name: tasks
+      filter: |
+        {
+          "property": "Status",
+          "status": {
+            "does_not_equal": "Done"
+          }
+        }
+  calendar: {}

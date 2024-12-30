@@ -1,7 +1,10 @@
 package notion
 
 import (
+	"context"
+
 	"fortis.notion-calendar-sync/internal/config"
+	"fortis.notion-calendar-sync/internal/domain"
 	"fortis.notion-calendar-sync/internal/infrastructure"
 	"github.com/jomei/notionapi"
 )
@@ -17,4 +20,13 @@ func New(cnf *config.NotionConfig) infrastructure.Notion {
 		client: notionapi.NewClient(notionapi.Token(cnf.IntegrationKey)),
 		config: cnf,
 	}
+}
+
+func (n *Notion) Events(ctx context.Context) ([]*domain.NotionEvent, error) {
+	var events []*domain.NotionEvent
+
+	// TODO: add filtration for the events querieng
+	n.client.Database.Query(ctx, notionapi.DatabaseID(n.config.Database.Id))
+
+	return events, nil
 }

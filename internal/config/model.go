@@ -20,8 +20,9 @@ type NotionConfig struct {
 }
 
 type NotionDatabaseConfig struct {
-	Id   string `json:"id"`
-	Name string `json:"name"`
+	Id     string `json:"id"`
+	Name   string `json:"name"`
+	Filter string `json:"filter"`
 }
 
 type CalendarConfig struct {
