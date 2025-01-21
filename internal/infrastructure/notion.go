@@ -8,4 +8,5 @@ import (
 
 type Notion interface {
 	Events(ctx context.Context) ([]*domain.NotionEvent, error)
+	UpdateEvent(ctx context.Context, event *domain.NotionEvent) error
 }

@@ -13,4 +13,8 @@ infrastructure:
             "does_not_equal": "Done"
           }
         }
+      properties:
+        name: Name
+        refId: Event-Id
+        Datetime: Date
   calendar: {}

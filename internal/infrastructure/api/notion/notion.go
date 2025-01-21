@@ -2,6 +2,8 @@ package notion
 
 import (
 	"context"
+	"errors"
+	"fmt"
 
 	"fortis.notion-calendar-sync/internal/config"
 	"fortis.notion-calendar-sync/internal/domain"
@@ -45,7 +47,11 @@ func (n *Notion) Events(ctx context.Context) ([]*domain.NotionEvent, error) {
 
 		// collect recieved pages
 		for _, p := range resp.Results {
-			events = append(events, n.handleResponsePage(p))
+			event, err := n.handleResponsePage(p)
+			if err != nil {
+				return []*domain.NotionEvent{}, err
+			}
+			events = append(events, event)
 		}
 
 		if resp.HasMore && resp.NextCursor != "" {
@@ -55,18 +61,57 @@ func (n *Notion) Events(ctx context.Context) ([]*domain.NotionEvent, error) {
 		} else {
 			break
 		}
-
 	}
 
 	return events, nil
 }
 
+// UpdateEvent updates the event
+func (n *Notion) UpdateEvent(ctx context.Context, event *domain.NotionEvent) error {
+	return errors.New("not implemented")
+}
+
 // handleResponsePage converts recieved notion page to internal notion event
-func (n *Notion) handleResponsePage(p notionapi.Page) *domain.NotionEvent {
-	event := domain.NotionEvent{
-		Id: p.ID.String(),
+func (n *Notion) handleResponsePage(p notionapi.Page) (*domain.NotionEvent, error) {
+	out := &domain.NotionEvent{
+		Id:  p.ID.String(),
+		Url: p.URL,
 	}
-	return &event
+
+	// refId decoding
+	prop, ok := p.Properties[n.config.Database.Properties.RefId]
+	if !ok {
+		return nil, fmt.Errorf(errPropertyNotFound, n.config.Database.Properties.RefId)
+	}
+	eventRefId, err := PropertyToString(prop)
+	if err != nil {
+		return nil, errors.Join(fmt.Errorf(errorPropertyDecode, "RefId"), err)
+	}
+	out.RefId = eventRefId
+
+	// name decoding
+	prop, ok = p.Properties[n.config.Database.Properties.Name]
+	if !ok {
+		return nil, fmt.Errorf(errPropertyNotFound, n.config.Database.Properties.Name)
+	}
+	eventName, err := PropertyToString(prop)
+	if err != nil {
+		return nil, errors.Join(fmt.Errorf(errorPropertyDecode, "Name"), err)
+	}
+	out.Name = eventName
+
+	// date decoding
+	prop, ok = p.Properties[n.config.Database.Properties.Datetime]
+	if !ok {
+		return nil, fmt.Errorf(errPropertyNotFound, n.config.Database.Properties.Datetime)
+	}
+	eventTime, err := PropertyToDatetime(prop)
+	if err != nil {
+		return nil, errors.Join(fmt.Errorf(errorPropertyDecode, "Datetime"), err)
+	}
+	out.Datetime = eventTime
+
+	return out, nil
 
 }
 
